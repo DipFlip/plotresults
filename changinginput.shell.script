@@ -1,0 +1,59 @@
+#!/bin/bash
+#######################################################################
+## Improved stanton script. It takes the StantonInput.dat file and   ##
+## and converts it into the desired geometrical shape.               ##
+##A script that runs stanton combined with a little script to 		 ##
+## extract a bunch of numbers between two lines, place all numbers 	 ##
+## in each group onto a single line, then save it to a file and then ##                                                       ##
+## plot it                                                           ##
+## Also, numbers from a single line with certain key word are saved  ##
+## to a file.                                                        ##
+#######################################################################
+
+
+echo -e "Decide desired geometrical shape; print 0 for rectangular or 1 for cylindrical\n";
+read shape
+
+echo -e "Print the width in one direction, x. Must be inte the format x.xx";
+read x
+
+echo -e "Print the width in second direction, y. Must be in the format x.xx";
+read y
+
+echo -e "Print the depth of the volume. Must be in the format x.xx";
+read z
+
+echo -e "Name the changed Stantoninputfile";
+read Stantoninputfilename
+
+sed -e 's/5.91  5.91  5.91 1 0   0=RECT, 1=CYLINDER FACE, 2=CYL SIDE/'$x'  '$y'  '$z' 1 '$shape'   0=RECT, 1=CYLINDER FACE, 2=CYL SIDE/' StantonInput.dat > $Stantoninputfilename
+
+##./runstanton.shell.script $Stantoninputfilename
+
+##  An attempt to make the program ask for the outputfiles in the runstanton script 
+echo -e "Would you  like name a specific filename for the stanton outputfile? Yes(1) or No (0) \n(defualt is stantonoutput .dat) \n";
+ read answer1
+
+    if [ $answer1 == 1 ]; then
+	echo -e "Print the filename for the stanton outputfile\n";
+	read stanton_output; 
+    echo -e "Would you also like name a specific filename for the files extracted by the extraction script? Yes(1) or No (0) \n(defualt is lots_of_numbers.txt and neutron_energies.txt) \n";
+   read answer2; 
+		if  [ $answer2 == 1 ]; then
+			echo -e "Print the filename for the detectionefficiencyfile\n" ;
+			read det_eff_file;
+			echo -e "Print the filename for the neutronenergy file \n";
+			read neutronenergyfile;
+		fi;
+ fi;
+
+ if [ $answer1 == 0 ]; then
+ ./runstanton.shell.script $Stantoninputfilename
+   else 
+	if [ $answer2 == 0 ]; then
+		./runstanton.shell.script $Stantoninputfilename $stanton_output
+	     else
+		./runstanton.shell.script $Stantoninputfilename $stanton_output $det_eff_file $neutronenergyfiley
+		fi;
+ fi;
+

@@ -1,0 +1,121 @@
+#!/bin/bash
+#######################################################################
+## A script that runs stanton combined with a little script to 		 ##
+## extract a bunch of numbers between two lines, place all numbers 	 ##
+## in each group onto a single line, then save it to a file and then ##                                                       ##
+## plot it                                                           ##
+## Also, numbers from a single line with certain key word are saved  ##
+## to a file.                                                        ##
+#######################################################################
+## Example of running, with stantoninput.dat as the input 		     ##
+##   ./extraction.shell.script stantoninput.dat 					 ##
+##                                                                   ##
+## or, with specific output file names:                              ##
+##   ./runstanton.shell.script stantoninput.dat stantonoutput.dat 	 ##
+##    file1.dat file2.dat										     ##
+#######################################################################
+
+########## Stanton part  ##########################################
+##########Input & output of stanton################################
+	
+stantoninput=$1
+stantonoutput=$2
+
+rm -r stantonoutput.dat
+
+# if no input is given, print help and exit
+	if [ $# == 0 ] ; then
+		echo -e "please enter .dat file name, for example:\n    ./extraction.shell.script stantoninput.dat " ;
+		echo -e "or to use specific output names:\n    ./extraction.shell.script stantoninput.dat stantonoutput.dat file.a.txt file.b.txt"
+	exit; fi 
+
+	if [ -z "$stantonoutput" ] ; then stantonoutput=stantonoutput.dat ; fi
+
+####### Running stanton ###############################################
+./stanton_emil  <<  EOF
+$stantoninput
+$stantonoutput
+EOF
+
+###################################################################
+### INPUT & OUTPUT ###
+######################
+
+	# the input file from the stantonprogram
+	#input=$2
+
+	# the output file names, optional
+	output1=$3
+	output2=$4
+
+	# if no input is given, print help and exit
+	if [ $# == 0 ] ; then
+		echo -e "please enter .dat file name, for example:\n    ./extraction.shell.script stantoninput.dat " ;
+		echo -e "or to use specific output names:\n    ./extraction.shell.script stantoninput.dat stantonoutput.dat file.a.txt file.b.txt"
+	exit; fi
+
+	# if no names are given, use some default names
+	if [ -z "$output1" ] ; then output1=lots_of_numbers.txt ; fi
+	if [ -z "$output2" ] ; then output2=neutron_energies.txt ; fi
+	###################################################################
+	
+	
+	### Extractionpart ################################################
+
+
+	###################################################################
+	### PART 1 ###
+	##############
+
+	# phrases to search for
+	key_word_1="NOTE  FIRST"
+	key_word_2="SCINTILLATOR"  #removed 1Cylindrical from keyword2
+
+	# search for the phrases, keep whatever is inbetween them
+	sed -rn "/$key_word_1/,/$key_word_2/{ /$key_word_1|$key_word_2/!p }" $stantonoutput > temp.$$.txt
+
+	# replace all blank lines with the word 'hej'
+	sed 's/^$/hej/' temp.$$.txt > blah.$$.txt
+
+	# replace all new lines with a space
+	sed ':a;N;$!ba;s/\n/ /g' blah.$$.txt > bleh.$$.txt
+
+	# replace all instances of 'hej' with a new line, and more than one space with just one space
+	sed -e 's/hej/\n/g' -e 's/[ \t]\+/ /g' bleh.$$.txt > bloo.$$.txt
+
+	# remove any spaces from the front of lines
+	sed 's/^[ \t]*//' bloo.$$.txt > blop.$$.txt
+
+	# still can't get rid of first empty line!! remove it here in a silly way...
+	# final output is saved to a text file
+	tail --lines=+2 blop.$$.txt > $output1
+
+	# remove temporary files
+	rm bleh.$$.txt
+	rm blah.$$.txt
+	rm bloo.$$.txt
+	rm blop.$$.txt
+	rm temp.$$.txt
+	###################################################################
+
+
+	###################################################################
+	### PART 2 ###
+	##############
+	## Another word to search for
+	key_word_3="BINW"
+
+	# look for this word and save whatever is in column 6
+	# output is saved to a text file
+	grep $key_word_3 $stantonoutput | awk '{print $6}' > $output2
+	###################################################################
+	
+	########Calling root ##############################################
+	
+		
+	##Calling root in a new terminal (not working)
+	##gnome-terminal -x bash -c "	root -l  'plotmod.cxx('\"$output1\"', '\"$output2\"')';bash" opens root in a new terminal
+	
+	root -l  'plotmod.cxx('\"$output1\"', '\"$output2\"')'  #-b added to the root will prevent any graphics -q will kill root
+		
+	exit;

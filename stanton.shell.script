@@ -1,0 +1,6 @@
+
+
+./stanton  <<  EOF
+StantonInput.dat
+new.dat
+EOF
