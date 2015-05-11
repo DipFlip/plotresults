@@ -1,3 +1,10 @@
 *x.d
 *x.so
+build
+output
+old*
+root
+#*
+*#
+*~
 Old nothing

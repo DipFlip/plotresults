@@ -2,10 +2,15 @@
 #include "TF1.h"
 #include "TTree.h"
 #include "TFile.h"
-
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "sstream"
 // These two lines are included inorder to make use of cout.
 #include <iostream>
 using namespace std;
+
+
+//Run with root "plotEfVsTh.cxx(\"lots_of_numbers.txt\",\"neutron_energies.txt\")"
 
 
 // some variable used below
@@ -21,14 +26,14 @@ void read_text_file(char InputFileName[], Float_t input_array[1000][1000]);
 //---------------------------------------------------------------------------//
 
 //! The main function of this little root script
-void plotmod(char InputFileA[], char InputFileB[], char OutPutName[]="pretty.plots.root"){
+void plotEfVsTh(char InputFileA[], char InputFileB[], char OutPutName[]="pretty.plots.root"){
 
 	read_text_file( InputFileA, array_a);
 	read_text_file( InputFileB, array_b);
 
 	for (Int_t i=0; i<max_col; i++){
 		array_c[i][0] = 0.1 + i*0.1;
-		cout << " array_c["<<i<<"][0]: " << array_c[i][0] << endl;
+		//cout << " array_c["<<i<<"][0]: " << array_c[i][0] << endl;
 	}
 
 	Int_t basket = 64000;
@@ -39,27 +44,64 @@ void plotmod(char InputFileA[], char InputFileB[], char OutPutName[]="pretty.plo
 	plot_tree->Branch( "neut_ene",	&value_b,	"neut_ene/F",	basket);
 	plot_tree->Branch( "thresh",	&value_c,	"thresh/F",		basket);
 
-
 	for (Int_t i=0; i<max_row; i++){
-
 		for (Int_t j=0; j<max_col; j++){
 
 			value_a = array_a[i][j];
 			value_b = array_b[i][0];
 			value_c = array_c[j][0];
-
 			plot_tree->Fill();
 		}
 	}
-//Skapa flera fönster
-	//TCanvas *myCanvas=new TCanvas();
-	//myCanvas->Divide(2,2);
-	//myCanvas->cd(2);
-//Här slutar fönster tillägget 
 
-	plot_tree->Draw("det_eff:neut_ene:thresh");
 
-	cout << " max_row: " << max_row << ", max_col: "<< max_col << endl;
+	TCanvas *myCanvas=new TCanvas();
+	myCanvas->Divide(2,4);
+	Double_t Thresholds[] = {1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0};
+
+
+//gROOT->SetStyle("Plain");
+//	gStyle->SetPadTickX(1);
+//	gStyle->SetPadTickY(1);
+//	gStyle->SetPadTopMargin(0.05);
+//	gStyle->SetPadRightMargin(0.05);
+	//gStyle->SetPadBottomMargin(0);
+//	gStyle->SetPadLeftMargin(0.12);
+//	gStyle->SetPadBorderMode(0);
+//	gStyle->SetOptStat(0);
+//	gStyle->SetOptTitle(0);
+  //  gStyle->SetOptStat(0);
+//    gStyle->SetPadTopMargin(0.);
+//    gStyle->SetPadBottomMargin(0.);
+//    gStyle->SetPadLeftMargin(0.);
+//    gStyle->SetPadRightMargin(0.); 
+//    gStyle->SetFillColor(0);
+//    gStyle->SetCanvasColor(0);
+//    gStyle->SetPadColor(0);
+//    gStyle->SetFrameBorderMode(0);
+
+	//std::stringstream sstm;
+	stringstream sstm;
+	for(Int_t k=0; k<8; k++){
+
+	
+		sstm.str("");
+		sstm << "thresh < " << Thresholds[k] +  0.05 << " && thresh > " << Thresholds[k] - 0.05;
+		myCanvas->cd(k+1);
+		gPad->SetBottomMargin(0.0);
+		gPad->SetTopMargin(0.0);
+		gPad->SetRightMargin(0.01);
+		//plot_tree->Draw("det_eff:thresh","neut_ene == 10.5 || neut_ene == 15","");//:thresh");
+		//plot_tree->Draw("det_eff:neut_ene","thresh < 2.35 && thresh >2.25","l");//:thresh");
+		gPad->RangeAxis(0,0,0.4,25);
+		plot_tree->Draw("det_eff:neut_ene", sstm.str().c_str(),"lp");
+		myCanvas->Update();
+		gPad->Update();
+		gPad->SetTitle("");
+	
+		gPad->RedrawAxis();
+	}
+	//cout << " max_row: " << max_row << ", max_col: "<< max_col << endl;
 
 
 	TFile *fFile = new TFile( OutPutName,"RECREATE","fROOTfile",1);
@@ -74,7 +116,7 @@ void plotmod(char InputFileA[], char InputFileB[], char OutPutName[]="pretty.plo
 void read_text_file(char InputFileName[], Float_t input_array[1000][1000]){
 
 
-	cout << "  Looking at file: " << InputFileName <<  endl;
+	//cout << "  Looking at file: " << InputFileName <<  endl;
 
 	char	delim[20]=" \t";
 	Int_t	linesize = 2000;
@@ -106,7 +148,7 @@ void read_text_file(char InputFileName[], Float_t input_array[1000][1000]){
 			sprintf( OutPutValue,"%s", LineChunk);
 			input_array[i_row][i_col] = atof(OutPutValue);
 			//cout << " OutPutValue: " << OutPutValue ;
-			cout <<  " input_array["<<i_row<<"]["<<i_col<<"]: " << input_array[i_row][i_col] << endl;
+			//cout <<  " input_array["<<i_row<<"]["<<i_col<<"]: " << input_array[i_row][i_col] << endl;
 
 			LineChunk = strtok (0, delim);
 

@@ -29,10 +29,10 @@ rm -r stantonoutput.dat
 		echo -e "or to use specific output names:\n    ./extraction.shell.script stantoninput.dat stantonoutput.dat file.a.txt file.b.txt"
 	exit; fi 
 
-	if [ -z "$stantonoutput" ] ; then stantonoutput=stantonoutput.dat ; fi
+	if [ -z "$stantonoutput" ] ; then stantonoutput=output/stantonoutput.dat ; fi
 
 ####### Running stanton ###############################################
-./stanton_emil  <<  EOF
+./bin/stanton_emil  <<  EOF
 $stantoninput
 $stantonoutput
 EOF
@@ -55,8 +55,8 @@ EOF
 	exit; fi
 
 	# if no names are given, use some default names
-	if [ -z "$output1" ] ; then output1=lots_of_numbers.txt ; fi
-	if [ -z "$output2" ] ; then output2=neutron_energies.txt ; fi
+	if [ -z "$output1" ] ; then output1=output/lots_of_numbers.txt ; fi
+	if [ -z "$output2" ] ; then output2=output/neutron_energies.txt ; fi
 	###################################################################
 	
 	
@@ -116,6 +116,6 @@ EOF
 	##Calling root in a new terminal (not working)
 	##gnome-terminal -x bash -c "	root -l  'plotmod.cxx('\"$output1\"', '\"$output2\"')';bash" opens root in a new terminal
 	
-	root -l  'plotmod.cxx('\"$output1\"', '\"$output2\"')'  #-b added to the root will prevent any graphics -q will kill root
+	root -l  'scr/plotmod.cxx('\"$output1\"', '\"$output2\"')'  #-b added to the root will prevent any graphics -q will kill root
 		
 	exit;

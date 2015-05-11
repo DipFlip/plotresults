@@ -1,0 +1,8 @@
+#include <plotResults.h>
+
+int main(){
+
+  plotResults myplotResults("../inputdata.dat", "");
+  bool result = myplotResults.run();
+  return result;
+}

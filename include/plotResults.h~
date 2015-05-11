@@ -1,0 +1,13 @@
+#include <string>
+
+class plotResults {
+ private:
+  int numberOfRuns;
+  std::string *pathToData;
+ public:
+  plotResults(std::string path);
+  ~plotResults();
+  bool run();
+  void printNoRuns();
+
+};
